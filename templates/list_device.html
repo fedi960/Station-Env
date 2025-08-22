@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Mes Devices{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Liste des appareils IoT</h1>
+    <a href="/devices/new" class="btn btn-primary">
+        + Ajouter un nouvel appareil
+    </a>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for device in devices %}
+    <div class="col">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title d-flex justify-content-between align-items-center">
+                    <span class="text-primary"><i class="fas fa-microchip me-2"></i>{{ device[1] }}</span>
+                    <span class="badge bg-secondary">{{ device[2] }}</span>
+                </h5>
+                <p class="card-text text-muted mb-4">ID: {{ device[0] }}</p>
+                <div class="mt-auto d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('mesures.device_mesures', device_id=device[0]) }}" class="btn btn-outline-primary btn-sm">
+                        Voir les mesures
+                    </a>
+                    <button class="btn btn-outline-danger btn-sm" onclick="deleteDevice({{ device[0] }})">
+                        Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    function deleteDevice(deviceId) {
+        if (confirm("Voulez-vous vraiment supprimer cet appareil ?")) {
+            fetch(`/api/delete_device/${deviceId}`, {
+                method: 'DELETE'
+            }).then(response => {
+                if (response.ok) {
+                    alert("Appareil supprimé avec succès.");
+                    location.reload();
+                } else {
+                    response.json().then(data => alert(data.error || "Erreur lors de la suppression"));
+                }
+            }).catch(error => {
+                alert("Erreur réseau : " + error);
+            });
+        }
+    }
+</script>
+{% endblock %}
