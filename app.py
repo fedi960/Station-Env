@@ -1,6 +1,7 @@
 from flask import Flask, redirect, url_for
 from flask_socketio import SocketIO
 
+from device import devices_bp
 from user import user_bp
 
 app = Flask(__name__)
@@ -8,6 +9,7 @@ app.secret_key = 'votre_cle_secrete'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 app.register_blueprint(user_bp)
+app.register_blueprint(devices_bp)
 
 def get_db():
     return psycopg2.connect(

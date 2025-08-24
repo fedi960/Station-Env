@@ -21,9 +21,7 @@
                 </h5>
                 <p class="card-text text-muted mb-4">ID: {{ device[0] }}</p>
                 <div class="mt-auto d-flex justify-content-between align-items-center">
-                    <a href="{{ url_for('mesures.device_mesures', device_id=device[0]) }}" class="btn btn-outline-primary btn-sm">
-                        Voir les mesures
-                    </a>
+
                     <button class="btn btn-outline-danger btn-sm" onclick="deleteDevice({{ device[0] }})">
                         Supprimer
                     </button>

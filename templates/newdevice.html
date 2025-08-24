@@ -1,10 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow" style="width: 100%; max-width: 500px; padding: 2rem;">
+        <div class="card-body">
+            <h2 class="card-title text-center mb-4">Ajouter un nouvel appareil</h2>
+            <form method="POST" action="{{ url_for('devices.new_device') }}">
+
+                <!-- Nom -->
+                <div class="mb-3">
+                    <label for="name" class="form-label">Nom de l'appareil</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+
+                <!-- Emplacement -->
+                <div class="mb-3">
+                    <label for="location" class="form-label">Emplacement</label>
+                    <input type="text" class="form-control" id="location" name="location" required>
+                </div>
+
+                <!-- ✅ Nouvelle section : Liste des valeurs -->
+                <div class="mb-3">
+                    <label class="form-label">Valeurs collectées par l'appareil</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="temperature" name="values" value="temperature">
+                        <label class="form-check-label" for="temperature">Température</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="humidity" name="values" value="humidity">
+                        <label class="form-check-label" for="humidity">Humidité</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="ph" name="values" value="ph">
+                        <label class="form-check-label" for="ph">pH</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="geolocation" name="values" value="geolocation">
+                        <label class="form-check-label" for="geolocation">Géolocalisation</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="kilometer" name="values" value="kilometer">
+                        <label class="form-check-label" for="kilometer">Détecteur de kilométrage</label>
+                    </div>
+                </div>
+
+                <!-- Boutons -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{{ url_for('devices.list_devices') }}" class="btn btn-secondary">
+                        ← Retour
+                    </a>
+                    <button type="submit" class="btn btn-primary">Créer l'appareil</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
