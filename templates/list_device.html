@@ -13,13 +13,13 @@
 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
     {% for device in devices %}
     <div class="col">
-        <div class="card h-100 shadow-sm">
+        <div class="card h-100 shadow-sm" onclick="window.location.href='{{ url_for('mesures.device_detail',device_id = device[0]) }}'">
             <div class="card-body">
                 <h5 class="card-title d-flex justify-content-between align-items-center">
                     <span class="text-primary"><i class="fas fa-microchip me-2"></i>{{ device[1] }}</span>
                     <span class="badge bg-secondary">{{ device[2] }}</span>
                 </h5>
-                <p class="card-text text-muted mb-4">ID: {{ device[0] }}</p>
+
                 <div class="mt-auto d-flex justify-content-between align-items-center">
 
                     <button class="btn btn-outline-danger btn-sm" onclick="deleteDevice({{ device[0] }})">

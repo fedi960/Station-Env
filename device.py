@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from uuid import uuid4
 import psycopg2
@@ -18,7 +18,7 @@ def list_devices():
     user_id = session['user_id']
     connection = get_db()
     cursor = connection.cursor()
-    cursor.execute('SELECT name , location FROM devices WHERE user_id = %s', (user_id,))
+    cursor.execute('SELECT id, name , location FROM devices WHERE user_id = %s', (user_id,))
     devices = cursor.fetchall()
     cursor.close()
     connection.close()
@@ -135,3 +135,22 @@ void loop() {{
 """
     return code
 
+
+
+@devices_bp.route("/api/delete_device/<int:device_id>", methods=["DELETE"])
+def delete_device(device_id):
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM devices WHERE id = %s", (device_id,))
+        rows_deleted = cursor.rowcount
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        if rows_deleted == 0:
+            return jsonify({"error": "Aucun device trouvé avec cet ID."}), 404
+
+        return jsonify({"message": f"✅ Device {device_id} supprimé avec succès."}), 200
+    except Exception as e:
+        return jsonify({"error": f"❌ Erreur lors de la suppression : {str(e)}"}), 500

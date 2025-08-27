@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}ESP Code – Device {{ device.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3">
+        <div class="sidebar">
+            <h5 class="mb-3">📂 Menu - {{ device.name }}</h5>
+            <div class="list-group">
+                <a href="{{ url_for('mesures.realtime', device_id=device.id) }}" class="list-group-item list-group-item-action">
+                    📡 Temps Réel
+                </a>
+                <a href="{{ url_for('mesures.history', device_id=device.id) }}" class="list-group-item list-group-item-action">
+                    📜 Historique
+                </a>
+                <a href="{{ url_for('mesures.esp_code', device_id=device.id) }}" class="list-group-item list-group-item-action">
+                    ⚙️ Code ESP
+                </a>
+                <a href="{{ url_for('devices.list_devices') }}" class="list-group-item list-group-item-action">
+                    🔙 Retour
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="col-md-9">
+        <div class="container mt-4">
+            <h2>Sketch ESP32 – Device {{ device.name }} (ID {{ device.id }})</h2>
+            <p>API Key : <code>{{ device.api_key }}</code></p>
+
+            <div class="card shadow p-3">
+                <pre><code>{{ sketch_code }}</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

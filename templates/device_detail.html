@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Détails Appareil{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3">
+        <div class="sidebar">
+            <h5 class="mb-3">📂 Menu - {{ device.name }}</h5>
+            <div class="list-group">
+                <a href="{{ url_for('mesures.realtime', device_id=device.id) }}" class="list-group-item list-group-item-action">
+                    📡 Temps Réel
+                </a>
+                <a href="{{ url_for('mesures.history', device_id=device.id) }}" class="list-group-item list-group-item-action">
+                    📜 Historique
+                </a>
+                <a href="{{ url_for('mesures.esp_code', device_id=device.id) }}" class="list-group-item list-group-item-action">
+                    ⚙️ Code ESP
+                </a>
+                <a href="{{ url_for('devices.list_devices') }}" class="list-group-item list-group-item-action">
+                    🔙 Retour
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content (vide pour l'instant) -->
+    <div class="col-md-9">
+        <div class="main-content">
+            <h3>Détails de l'appareil</h3>
+            <p><strong>Nom :</strong> {{ device.name }}</p>
+            <p><strong>Emplacement :</strong> {{ device.location }}</p>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

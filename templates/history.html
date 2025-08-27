@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Historique – Device {{ device.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3">
+        <div class="sidebar">
+            <h5 class="mb-3">📂 Menu - {{ device.name }}</h5>
+            <div class="list-group">
+                <a href="{{ url_for('mesures.realtime', device_id=device.id) }}" class="list-group-item list-group-item-action">
+                    📡 Temps Réel
+                </a>
+                <a href="{{ url_for('mesures.history', device_id=device.id) }}" class="list-group-item list-group-item-action">
+                    📜 Historique
+                </a>
+                <a href="{{ url_for('mesures.esp_code', device_id=device.id) }}" class="list-group-item list-group-item-action">
+                    ⚙️ Code ESP
+                </a>
+                <a href="{{ url_for('devices.list_devices') }}" class="list-group-item list-group-item-action">
+                    🔙 Retour
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="col-md-9">
+        <div class="container mt-4">
+            <h2>Historique des mesures – Device {{ device.name }}</h2>
+
+            {% for capability, values in data.items() %}
+                <div class="card my-3 shadow">
+                    <div class="card-body">
+                        <h4>{{ capability }}</h4>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Valeur</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in values %}
+                                    <tr>
+                                        <td>{{ item.timestamp }}</td>
+                                        <td><strong>{{ item.value }}</strong></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
