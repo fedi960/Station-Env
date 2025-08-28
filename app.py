@@ -1,16 +1,18 @@
 from flask import Flask, redirect, url_for
-from flask_socketio import SocketIO
+from extensions import socketio
 
 from device import devices_bp
 from user import user_bp
 from mesure import mesures_bp
 
+
 app = Flask(__name__)
 app.secret_key = 'votre_cle_secrete'
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio.init_app(app, cors_allowed_origins="*")
 
 app.register_blueprint(user_bp)
 app.register_blueprint(devices_bp)
+
 app.register_blueprint(mesures_bp)
 
 def get_db():

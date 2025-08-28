@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 import psycopg2
 from datetime import datetime
+from extensions import socketio
 mesures_bp = Blueprint('mesures', __name__)
 
 def get_db():
@@ -46,6 +47,13 @@ def insert_mesures():
             VALUES (%s, %s, (SELECT id FROM capability WHERE typecapability = %s LIMIT 1), %s)
         """, (value, now, capability, id_mesure))
 
+        socketio.emit('new_measurement', {
+            "device_id": device_id,
+            "capability": capability.lower(),
+            "value": value,
+            "timestamp": now.strftime("%Y-%m-%d %H:%M:%S")
+        })
+
     conn.commit()
     cur.close()
     conn.close()
@@ -70,7 +78,6 @@ def device_detail(device_id):
         "location": row[2]
     }
     return render_template("device_detail.html", device=device)
-
 
 @mesures_bp.route("/realtime/<int:device_id>", methods=["GET"])
 def realtime(device_id):

@@ -37,28 +37,30 @@
     </div>
 </div>
 
+<!-- ✅ Import Chart.js + Socket.IO -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
 <script>
-// Convertir les données Flask en JS
+// Connect to Socket.IO server
+const socket = io();
+
+// Convert Flask data to JS
 const data = {{ data | tojson }};
-console.log("Data reçue:", data);
+console.log("Initial data:", data);
 
 const lineLabels = [];
 const datasets = [];
 const barLabels = [];
 const kmData = [];
 
-// Créer les datasets dynamiquement
+// Initialize datasets
 Object.keys(data).forEach((capability, idx) => {
     const values = data[capability];
     if (capability !== 'kilometrage') {
         const yData = values.map(v => v.value);
         const xLabels = values.map(v => v.timestamp || '');
-
-        // remplir les labels du line chart uniquement si vide
-        if (lineLabels.length === 0) {
-            xLabels.forEach(label => lineLabels.push(label));
-        }
+        if (lineLabels.length === 0) xLabels.forEach(label => lineLabels.push(label));
 
         datasets.push({
             label: capability.charAt(0).toUpperCase() + capability.slice(1),
@@ -76,24 +78,18 @@ Object.keys(data).forEach((capability, idx) => {
     }
 });
 
-// --- Line chart ---
-if (datasets.length > 0) {
-    const ctxLine = document.getElementById('lineChart').getContext('2d');
-    window.lineChart = new Chart(ctxLine, {
-        type: 'line',
-        data: { labels: lineLabels, datasets: datasets },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'top' } },
-            scales: { x: { display: true }, y: { display: true } }
-        }
-    });
-}
+// --- Initialize Charts ---
+const ctxLine = document.getElementById('lineChart').getContext('2d');
+window.lineChart = new Chart(ctxLine, {
+    type: 'line',
+    data: { labels: lineLabels, datasets: datasets },
+    options: { responsive: true, plugins: { legend: { position: 'top' } } }
+});
 
-// --- Bar chart ---
+let barChart;
 if (kmData.length > 0) {
     const ctxBar = document.getElementById('barChart').getContext('2d');
-    window.barChart = new Chart(ctxBar, {
+    barChart = new Chart(ctxBar, {
         type: 'bar',
         data: {
             labels: barLabels,
@@ -105,12 +101,40 @@ if (kmData.length > 0) {
                 borderWidth: 1
             }]
         },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'top' } },
-            scales: { x: { display: true }, y: { display: true } }
-        }
+        options: { responsive: true, plugins: { legend: { position: 'top' } } }
     });
 }
+
+// --- Listen for new measurements ---
+socket.on('new_measurement', msg => {
+    if (msg.device_id !== {{ device.id }}) return; // ignore other devices
+    const { capability, value, timestamp } = msg;
+    console.log("New measurement:", msg);
+
+    if (capability !== 'kilometrage') {
+        let dataset = datasets.find(d => d.label.toLowerCase() === capability.toLowerCase());
+        if (!dataset) {
+            dataset = {
+                label: capability.charAt(0).toUpperCase() + capability.slice(1),
+                data: [],
+                borderColor: `hsl(${datasets.length * 60}, 70%, 50%)`,
+                backgroundColor: `hsla(${datasets.length * 60}, 70%, 50%, 0.2)`,
+                fill: false,
+                tension: 0.2
+            };
+            datasets.push(dataset);
+            lineChart.data.datasets.push(dataset);
+        }
+        dataset.data.push(value);
+        lineChart.data.labels.push(timestamp);  // ✅ correction
+        lineChart.update();
+    } else if (barChart) {
+        barChart.data.labels.push(timestamp);   // ✅ correction
+        barChart.data.datasets[0].data.push(value);
+        barChart.update();
+    }
+});
+
 </script>
+
 {% endblock %}
