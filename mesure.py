@@ -108,7 +108,7 @@ def realtime(device_id):
     for name, value, ts in rows:
         if name not in data:
             data[name] = []
-        data[name].append({"value": value, "timestamp": ts})
+        data[name].append({"value": value, "timestamp": ts.strftime("%Y-%m-%d %H:%M:%S")})
 
     return render_template("realtime.html", device=device, data=data)
 

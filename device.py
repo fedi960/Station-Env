@@ -15,6 +15,7 @@ def get_db():
 def list_devices():
     if 'user_id' not in session:
         return redirect(url_for('users.login'))
+
     user_id = session['user_id']
     connection = get_db()
     cursor = connection.cursor()
@@ -59,45 +60,49 @@ def new_device():
 """***************************** GENERATE CODE ESP  ***********************************"""
 
 
-def generate_esp32_sketch( measurements):
-
-    # Déclarations des librairies selon les capteurs choisis
-    includes = [
-        '#include <WiFi.h>',
-        '#include <HTTPClient.h>'
-    ]
+def generate_esp32_sketch(measurements):
+    includes = ['#include <WiFi.h>', '#include <HTTPClient.h>']
     setup_code = []
     loop_code = []
 
+    # --- Capteurs physiques ---
     if "temperature" in measurements or "humidity" in measurements:
         includes.append('#include "DHT.h"')
-        setup_code.append('DHT dht(4, DHT22);')  # GPIO4, capteur DHT22
-        loop_code.append('float temperature = dht.readTemperature();')
-        loop_code.append('float humidity = dht.readHumidity();')
+        setup_code.append('DHT dht(4, DHT22);')
+        if "temperature" in measurements:
+            loop_code.append('float temperature = dht.readTemperature();')
+        if "humidity" in measurements:
+            loop_code.append('float humidity = dht.readHumidity();')
 
     if "ph" in measurements:
-        loop_code.append('int phValue = analogRead(34);  // GPIO34 pour capteur pH')
+        loop_code.append('int phValue = analogRead(34);')
         loop_code.append('float ph = (phValue * 14.0) / 4095.0;')
 
-    # Construction du JSON à envoyer
+    # --- Simulation aléatoire (fallback si pas de capteurs) ---
+    if not loop_code:
+        if "temperature" in measurements:
+            loop_code.append('float temperature = random(150, 351) / 10.0;')
+        if "humidity" in measurements:
+            loop_code.append('float humidity = random(300, 901) / 10.0;')
+        if "ph" in measurements:
+            loop_code.append('float ph = random(0, 140) / 10.0;')
+
+    # --- Construction JSON dynamique ---
     json_parts = []
-    if "temperature" in measurements:
-        json_parts.append('"temperature": temperature')
-    if "humidity" in measurements:
-        json_parts.append('"humidity": humidity')
-    if "ph" in measurements:
-        json_parts.append('"ph": ph')
+    for capability in measurements:
+        json_parts.append(f'"\\"{capability}\\":" + String({capability})')
+    json_string = '"{" + ' + ' + "," + '.join(json_parts) + ' + "}"'
 
-    json_string = "{" + ",".join(json_parts) + "}"
-
-    # Code complet
+    # --- Code final ---
     code = f"""
 {chr(10).join(includes)}
 
 const char* ssid = "wifi_ssid";
 const char* password = "wifi_password";
-String serverName = "server_url";
+String serverName = "http://192.168.0.181:5000"; // <-- ton Flask
 String apiKey = "api_key";
+
+{"".join(setup_code)}
 
 void setup() {{
   Serial.begin(115200);
@@ -109,31 +114,32 @@ void setup() {{
   }}
   Serial.println("Connected to WiFi");
   {"dht.begin();" if "temperature" in measurements or "humidity" in measurements else ""}
+  randomSeed(analogRead(0)); // pour mode simulation
 }}
 
 void loop() {{
   if (WiFi.status() == WL_CONNECTED) {{
+    {"".join(loop_code)}
     HTTPClient http;
-    http.begin(serverName + "/api/measurements");
+    http.begin(serverName + "/api/mesures"); // <-- FIX
     http.addHeader("Content-Type", "application/json");
     http.addHeader("X-API-KEY", apiKey);
-
-    {chr(10).join(loop_code)}
-
-    String json = String("{json_string}");
+    String json = {json_string}; // JSON dynamique
     int httpResponseCode = http.POST(json);
-
-    Serial.print("Response: ");
+    Serial.print("Sent: ");
+    Serial.print(json);
+    Serial.print(" | Response: ");
     Serial.println(httpResponseCode);
-
     http.end();
   }} else {{
     Serial.println("WiFi Disconnected");
   }}
-  delay(10000); // envoie toutes les 10 secondes
+  delay(10000);
 }}
 """
     return code
+
+
 
 
 

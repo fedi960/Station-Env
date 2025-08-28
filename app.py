@@ -15,7 +15,7 @@ app.register_blueprint(mesures_bp)
 
 def get_db():
     return psycopg2.connect(
-        dbname="StationEnv",
+        dbname="Station-Environnemental",
         user="postgres",
         password="fedi",
         host="localhost"
