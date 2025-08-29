@@ -1,3 +1,9 @@
+import base64
+import io
+import qrcode
+import zipfile
+from flask import send_file
+
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 import psycopg2
 from datetime import datetime
@@ -179,4 +185,54 @@ def esp_code(device_id):
     cur.close()
     conn.close()
 
-    return render_template("esp_code.html", device=device, sketch_code=sketch_code)
+    qr_img = qrcode.make(device["api_key"])
+    bufer = io.BytesIO()
+    qr_img.save(bufer, "PNG")
+    qr_base64 = base64.b64encode(bufer.getvalue()).decode("utf-8")
+
+    return render_template("esp_code.html", device=device, sketch_code=sketch_code, qr_code=qr_base64)
+
+@mesures_bp.route("/download_esp/<int:device_id>", methods=["GET"])
+def download_esp(device_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT sketch_io, name FROM devices WHERE id = %s", (device_id,))
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    if not row:
+        return "Device not found", 404
+
+    sketch_code, name = row
+    ino_filename = f"{name}_esp32.ino"
+    zip_filename = f"{name}_esp32.zip"
+
+    # Créer un ZIP en mémoire
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as zip_file:
+        # Fichier principal ESP32
+        zip_file.writestr(ino_filename, sketch_code)
+
+        # Ajouter un README pour guider l’utilisateur
+        readme_content = f"""
+        📘 Instructions pour ton device
+
+        1. Extraire le contenu de ce fichier ZIP.
+        2. Scanner la clé API est correcte.
+        3. Implimente ton wifi SSId et mot de passe.
+        4. Vérifie les porst connecté des capteurs.  
+        5. Téléverse vers votre ESP32.
+
+        Bonne utilisation 🚀
+        """
+        zip_file.writestr("README.txt", readme_content)
+
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=zip_filename,
+        mimetype="application/zip"
+    )

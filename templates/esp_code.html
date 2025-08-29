@@ -15,7 +15,7 @@
                 <a href="{{ url_for('mesures.history', device_id=device.id) }}" class="list-group-item list-group-item-action">
                     📜 Historique
                 </a>
-                <a href="{{ url_for('mesures.esp_code', device_id=device.id) }}" class="list-group-item list-group-item-action">
+                <a href="{{ url_for('mesures.esp_code', device_id=device.id) }}" class="list-group-item list-group-item-action active">
                     ⚙️ Code ESP
                 </a>
                 <a href="{{ url_for('devices.list_devices') }}" class="list-group-item list-group-item-action">
@@ -28,11 +28,30 @@
     <!-- Main content -->
     <div class="col-md-9">
         <div class="container mt-4">
-            <h2>Sketch ESP32 – Device {{ device.name }} (ID {{ device.id }})</h2>
-            <p>API Key : <code>{{ device.api_key }}</code></p>
+            <h2>Sketch ESP32 – Device {{ device.name }}</h2>
 
+            <!-- QR Code + Download button aligned -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5>🔑 API Key en QR Code</h5>
+                    <img src="data:image/png;base64,{{ qr_code }}"
+                         alt="QR Code API Key"
+                         class="img-thumbnail shadow-sm"
+                         style="max-width:200px;">
+                </div>
+                <div>
+                    <a href="{{ url_for('mesures.download_esp', device_id=device.id) }}" class="btn btn-primary">
+                        📥 Télécharger le code ESP (.ZIP)
+                    </a>
+                </div>
+            </div>
+
+            <!-- Sketch affiché -->
             <div class="card shadow p-3">
-                <pre><code>{{ sketch_code }}</code></pre>
+                <pre><code class="language-cpp">{{ sketch_code }}</code></pre>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+                <script>hljs.highlightAll();</script>
             </div>
         </div>
     </div>
