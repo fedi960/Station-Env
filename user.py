@@ -138,15 +138,13 @@ def send_confirmation_email(user_email):
     token = s.dumps(user_email, salt="email-confirm")
     confirm_url = url_for("users.confirm_email", token=token, _external=True)
 
-    # Mail HTML cliquable
-    html_body = f"""
-    <p>Cliquez sur ce lien pour confirmer votre compte :</p>
-    <p><a href="{confirm_url}">{confirm_url}</a></p>
-    """
+    # Utiliser un template HTML
+    html_body = render_template("confirm_email.html", confirm_url=confirm_url)
 
     msg = Message("Confirmez votre compte", recipients=[user_email])
     msg.html = html_body
     mail.send(msg)
+
 
 
 # 🔹 Confirmation de l’email
