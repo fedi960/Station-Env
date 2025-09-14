@@ -13,9 +13,9 @@ app.config['SECRET_KEY'] = 'une_cle_secrete'  # clé secrète utilisée par seri
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'fedichaibi585@gmail.com'
+app.config['MAIL_USERNAME'] = 'votrmail@gmail.com'
 app.config['MAIL_PASSWORD'] = 'ctor kgxn pehr xpsw'
-app.config['MAIL_DEFAULT_SENDER'] = 'fedichaibi585@gmail.com'
+app.config['MAIL_DEFAULT_SENDER'] = 'votre/aplication/mail@gmail.com'
 
 # 🔌 Initialisation des extensions
 socketio.init_app(app, cors_allowed_origins="*")
